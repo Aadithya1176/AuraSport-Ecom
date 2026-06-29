@@ -57,7 +57,9 @@ class CartCreate(BaseModel):
     product_id: int
 class CartResponse(BaseModel):
     id: int
-    cart_id: int
+    user_id: int
+    product_id: int
     qty: int
+
     class Config:
         from_attributes = True

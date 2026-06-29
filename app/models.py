@@ -50,7 +50,7 @@ class Products(Base):
     category_id = Column(Integer, ForeignKey("categories.id"))
 
     category = relationship("Categories", back_populates="products")
-    cart_items = relationship("Cart",back_populates="products")
+    cart_items = relationship("Cart", back_populates="product")
     
 
 class Cart(Base):
@@ -62,7 +62,7 @@ class Cart(Base):
     product_id = Column(Integer,
                         ForeignKey("products.id"))
     qty = Column(Integer)
-    users = relationship("Users",back_populates="cart_items")
-    products = relationship("Products",back_populates="cart_items")
+    user = relationship("Users", back_populates="cart_items")
+    product = relationship("Products", back_populates="cart_items")
 
     

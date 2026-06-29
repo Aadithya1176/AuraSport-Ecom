@@ -5,11 +5,11 @@ from typing import List
 try:
     from ..database import get_db
     from ..models import Categories
-    from ..schemas import CategoryCreate, CategoryResponse, MessageResponse
+    from ..schemas import CategoryCreate, CategoryResponse, MessageResponse, ProductResponse
 except ImportError:
     from database import get_db
     from models import Categories
-    from schemas import CategoryCreate, CategoryResponse, MessageResponse
+    from schemas import CategoryCreate, CategoryResponse, MessageResponse, ProductResponse
 
 category_router = APIRouter()
 
@@ -101,7 +101,7 @@ def delete_category(id: int, db=Depends(get_db)):
 
 
 
-@category_router.get("/categories/{id}/products",response_model=List[CategoryResponse])
+@category_router.get("/categories/{id}/products", response_model=List[ProductResponse])
 def find_category_byid(id:int,db = Depends(get_db)):
     category = db.query(Categories).filter(Categories.id == id).first()
     if not category:
@@ -110,5 +110,3 @@ def find_category_byid(id:int,db = Depends(get_db)):
             detail="Category not Found"
         )
     return category.products
-
-

@@ -15,11 +15,13 @@ except ImportError:
 
 cart_router = APIRouter()
 
-@cart_router.post("/carts")
+@cart_router.post("/carts", response_model=CartResponse)
 def add_to_cart(a:CartCreate,
                 db = Depends(get_db),
                 current_user = Depends(get_current_user)):
     user = db.query(Users).filter(Users.email == current_user["sub"]).first()
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
     product = db.query(Products).filter(
         Products.id == a.product_id
     ).first()
@@ -35,9 +37,15 @@ def add_to_cart(a:CartCreate,
         ).first()
     if cart_item:
         cart_item.qty += a.qty
-
-        db.commit()
-        db.refresh(cart_item)
+        try:
+            db.commit()
+            db.refresh(cart_item)
+        except SQLAlchemyError:
+            db.rollback()
+            raise HTTPException(
+                status_code=500,
+                detail="Database error while updating cart"
+            )
         return cart_item
     else:
         cart_item = Cart(
@@ -47,8 +55,21 @@ def add_to_cart(a:CartCreate,
         )
 
         db.add(cart_item)
-        db.commit()
-        db.refresh(cart_item)
+        try:
+            db.commit()
+            db.refresh(cart_item)
+        except IntegrityError:
+            db.rollback()
+            raise HTTPException(
+                status_code=400,
+                detail="Invalid cart item data"
+            )
+        except SQLAlchemyError:
+            db.rollback()
+            raise HTTPException(
+                status_code=500,
+                detail="Database error while adding to cart"
+            )
 
         return cart_item
 
@@ -58,9 +79,12 @@ def get_cart(
     current_user=Depends(get_current_user)
 ):
         user = db.query(Users).filter(
-        Users.email == current_user["sub"]).first()
+            Users.email == current_user["sub"]
+        ).first()
+        if not user:
+            raise HTTPException(status_code=404, detail="User not found")
         cart_items = db.query(Cart).filter(
-             Cart.user_id == user.id
+            Cart.user_id == user.id
         ).all()
         return cart_items
 
@@ -71,8 +95,10 @@ def delete_cart_item(
      current_user=Depends(get_current_user)
 ):
         user = db.query(Users).filter(
-        Users.email == current_user["sub"]
+            Users.email == current_user["sub"]
         ).first()
+        if not user:
+            raise HTTPException(status_code=404, detail="User not found")
         cart_item = db.query(Cart).filter(Cart.id == id,
         Cart.user_id == user.id
         ).first()
