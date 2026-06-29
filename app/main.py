@@ -13,6 +13,7 @@ except ImportError:
     from routes.categories import category_router
     from routes.products import router as products_router
     from routes.users import user_router
+    from routes.cart import cart_router
 
 app = FastAPI(title="AuraSport Backend")
 
@@ -26,3 +27,4 @@ def create_tables() -> None:
 app.include_router(user_router)
 app.include_router(category_router)
 app.include_router(products_router)
+app.include_router(cart_router)

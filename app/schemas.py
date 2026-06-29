@@ -1,17 +1,25 @@
 from pydantic import BaseModel
 
+
+class MessageResponse(BaseModel):
+    message: str
+
+
 class ProductCreate(BaseModel):
-    name : str
-    price : float
+    name: str
+    price: float
+    category_id: int | None = None
 
 class ProductUpdate(BaseModel):
     name: str | None = None
     price: float | None = None
+    category_id: int | None = None
 
 class ProductResponse(BaseModel):
     id: int
     name: str
     price: float
+    category_id: int | None = None
 
     class Config:
         from_attributes = True
@@ -41,5 +49,15 @@ class CategoryResponse(BaseModel):
     id: int
     name: str
 
+    class Config:
+        from_attributes = True
+
+class CartCreate(BaseModel):
+    qty: int
+    product_id: int
+class CartResponse(BaseModel):
+    id: int
+    cart_id: int
+    qty: int
     class Config:
         from_attributes = True

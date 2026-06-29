@@ -1,8 +1,10 @@
-from sqlalchemy.orm import declarative_base, relationship
-from sqlalchemy import Integer, String, Column, Float
-from sqlalchemy import ForeignKey
+from sqlalchemy import Column, Float, ForeignKey, Integer, String
+from sqlalchemy.orm import relationship
 
-Base = declarative_base()
+try:
+    from .database import Base
+except ImportError:
+    from database import Base
 
 
 class Users(Base):
@@ -13,8 +15,10 @@ class Users(Base):
     email = Column(String, unique=True)
     password = Column(String)
 
-    orders = relationship("Orders",
-                          back_populates="user")
+    orders = relationship("Orders", back_populates="user")
+    cart_items = relationship("Cart", back_populates="user")
+
+
 class Orders(Base):
     __tablename__ = "orders"
 
@@ -25,16 +29,17 @@ class Orders(Base):
         ForeignKey("users.id")
     )
 
-    user = relationship("Users",
-                        back_populates="orders")
-    
+    user = relationship("Users", back_populates="orders")
+
+
 class Categories(Base):
     __tablename__ = "categories"
 
     id = Column(Integer, primary_key=True)
     name = Column(String, unique=True)
 
-    products = relationship("Products",back_populates="category")
+    products = relationship("Products", back_populates="category")
+
 
 class Products(Base):
     __tablename__ = "products"
@@ -42,11 +47,22 @@ class Products(Base):
     name = Column(String)
     price = Column(Float)
 
-    category_id = Column(Integer,
-                         ForeignKey("categories.id"))
+    category_id = Column(Integer, ForeignKey("categories.id"))
+
+    category = relationship("Categories", back_populates="products")
+    cart_items = relationship("Cart",back_populates="products")
     
-    category = relationship("Categories",back_populates="products")
 
-
+class Cart(Base):
+    __tablename__ = "cart"
+    id = Column(Integer,primary_key=True)
+    user_id = Column(Integer,
+                     ForeignKey("users.id")
+    )
+    product_id = Column(Integer,
+                        ForeignKey("products.id"))
+    qty = Column(Integer)
+    users = relationship("Users",back_populates="cart_items")
+    products = relationship("Products",back_populates="cart_items")
 
     

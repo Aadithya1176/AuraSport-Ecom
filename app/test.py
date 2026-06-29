@@ -1,4 +1,7 @@
-from database import engine
+try:
+    from .database import engine
+except ImportError:
+    from database import engine
 
 try:
     connection = engine.connect()
